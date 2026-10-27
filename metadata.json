@@ -1,0 +1,6 @@
+{
+  "name": "Youth Cadre",
+  "description": "Intelligent Youth Leadership Workspace - Quản trị công việc và trợ lý AI dành cho cán bộ Đoàn, cán bộ quản lý.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,108 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isValidTask(data, userId) {
+      return data.userId == userId
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 300
+        && (!('assignedBy' in data) || data.assignedBy is string)
+        && (!('assignee' in data) || data.assignee is string)
+        && (!('coordinator' in data) || data.coordinator is string)
+        && (!('deadline' in data) || data.deadline is string)
+        && (!('priority' in data) || data.priority is string)
+        && (!('status' in data) || data.status is string)
+        && (!('description' in data) || data.description is string)
+        && (!('progress' in data) || (data.progress is number && data.progress >= 0 && data.progress <= 100))
+        && (!('notes' in data) || data.notes is list)
+        && (!('attachments' in data) || data.attachments is list);
+    }
+
+    function isValidEvent(data, userId) {
+      return data.userId == userId
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 300
+        && (!('date' in data) || data.date is string)
+        && (!('time' in data) || data.time is string)
+        && (!('location' in data) || data.location is string)
+        && (!('description' in data) || data.description is string)
+        && (!('host' in data) || data.host is string)
+        && (!('attendees' in data) || data.attendees is string)
+        && (!('notes' in data) || data.notes is string);
+    }
+
+    function isValidCircular(data, userId) {
+      return data.userId == userId
+        && data.title is string && data.title.size() > 0
+        && (!('code' in data) || data.code is string)
+        && (!('issuer' in data) || data.issuer is string)
+        && (!('category' in data) || data.category is string)
+        && (!('issueDate' in data) || data.issueDate is string)
+        && (!('summary' in data) || data.summary is string)
+        && (!('keyRules' in data) || data.keyRules is list)
+        && (!('fullContent' in data) || data.fullContent is string);
+    }
+
+    function isValidAdvisory(data, userId) {
+      return data.userId == userId
+        && data.title is string && data.title.size() > 0
+        && (!('targetOrg' in data) || data.targetOrg is string)
+        && (!('content' in data) || data.content is string)
+        && (!('basis' in data) || data.basis is string)
+        && (!('actionPlan' in data) || data.actionPlan is list);
+    }
+
+    function isValidSettlement(data, userId) {
+      return data.userId == userId
+        && data.title is string && data.title.size() > 0
+        && (!('amount' in data) || data.amount is number)
+        && (!('budgetEstimateCode' in data) || data.budgetEstimateCode is string)
+        && (!('deadline' in data) || data.deadline is string)
+        && (!('isCompleted' in data) || data.isCompleted is bool);
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+
+      match /tasks/{taskId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidTask(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /events/{eventId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidEvent(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /circulars/{circularId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidCircular(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /workspaces/{workspaceId} {
+        allow read, write: if isOwner(userId);
+      }
+
+      match /advisories/{advisoryId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidAdvisory(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /settlements/{settlementId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidSettlement(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

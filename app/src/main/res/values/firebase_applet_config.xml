@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<resources>
+    <string name="firestore_database_id" translatable="false">ai-studio-android-youthcad-30b08d2c-ab7e-460a-87fe-c81dc562f8fe</string>
+    <string name="recaptcha_site_key" translatable="false">6LeXNf0tAAAAAKuPsaPg5pYcSv7s7GVTx3wqV5OD</string>
+</resources>

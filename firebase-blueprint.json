@@ -1,0 +1,124 @@
+{
+  "entities": {
+    "Task": {
+      "title": "Task",
+      "description": "Represents a youth cadre assigned task or mission",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the owner" },
+        "title": { "type": "string", "description": "Title of the task" },
+        "description": { "type": "string", "description": "Detailed description of the task" },
+        "assignedBy": { "type": "string", "description": "Person or organization who assigned the task" },
+        "assignee": { "type": "string", "description": "Primary person responsible" },
+        "coordinator": { "type": "string", "description": "Collaborator or coordinating personnel" },
+        "deadline": { "type": "string", "description": "Deadline formatted as dd/MM/yyyy" },
+        "priority": { "type": "string", "description": "Priority level (Khẩn cấp, Cao, Trung bình, Thấp)" },
+        "status": { "type": "string", "description": "Status (Chưa bắt đầu, Đang thực hiện, Chờ duyệt, Hoàn thành)" },
+        "progress": { "type": "integer", "description": "Progress percentage from 0 to 100" },
+        "notes": { "type": "array", "description": "Progress updates and notes", "items": { "type": "string" } },
+        "attachments": { "type": "array", "description": "Uploaded or linked files like Word or PDF", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
+      },
+      "required": ["userId", "title", "assignedBy", "assignee", "deadline", "priority", "status"]
+    },
+    "Event": {
+      "title": "Event",
+      "description": "Represents a scheduled meeting, executive work session, or youth activity",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the owner" },
+        "title": { "type": "string", "description": "Title of the schedule event" },
+        "description": { "type": "string", "description": "Details of the schedule event" },
+        "date": { "type": "string", "description": "Event date formatted as dd/MM/yyyy" },
+        "time": { "type": "string", "description": "Event time formatted as HH:mm" },
+        "location": { "type": "string", "description": "Location or meeting room/platform" },
+        "host": { "type": "string", "description": "Host or chairperson" },
+        "attendees": { "type": "string", "description": "Participating members or delegates" },
+        "notes": { "type": "string", "description": "Preparation notes or remarks" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
+      },
+      "required": ["userId", "title", "date", "time", "location"]
+    },
+    "Circular": {
+      "title": "Circular",
+      "description": "Represents official documents, circulars, resolutions, guidelines for youth cadres",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the owner or creator" },
+        "code": { "type": "string", "description": "Document code or dispatch number" },
+        "title": { "type": "string", "description": "Document title" },
+        "issuer": { "type": "string", "description": "Issuing organization or authority" },
+        "issueDate": { "type": "string", "description": "Issue date dd/MM/yyyy" },
+        "category": { "type": "string", "description": "Category (Hướng dẫn, Kế hoạch, Điều lệ, Nghị quyết...)" },
+        "summary": { "type": "string", "description": "Summary of the document" },
+        "keyRules": { "type": "array", "description": "Key takeaways and rules", "items": { "type": "string" } },
+        "fullContent": { "type": "string", "description": "Full document content" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
+      },
+      "required": ["userId", "code", "title", "issuer", "category"]
+    },
+    "Advisory": {
+      "title": "Advisory",
+      "description": "Represents strategic proposals, submissions (tờ trình), or consultation plans generated or saved",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the owner" },
+        "title": { "type": "string", "description": "Proposal or submission title" },
+        "targetOrg": { "type": "string", "description": "Addressee or superior committee" },
+        "basis": { "type": "string", "description": "Legal and practical basis" },
+        "content": { "type": "string", "description": "Main proposal and recommendation content" },
+        "actionPlan": { "type": "array", "description": "Structured implementation milestones", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
+      },
+      "required": ["userId", "title", "targetOrg", "content"]
+    },
+    "Settlement": {
+      "title": "Settlement",
+      "description": "Represents financial settlement item with budget code and deadline",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the owner" },
+        "workspaceId": { "type": "string", "description": "Workspace ID" },
+        "title": { "type": "string", "description": "Settlement purpose or content" },
+        "amount": { "type": "integer", "description": "Settlement amount in VNĐ" },
+        "budgetEstimateCode": { "type": "string", "description": "Budget estimate number or code" },
+        "deadline": { "type": "string", "description": "Settlement deadline dd/MM/yyyy" },
+        "taskId": { "type": "string", "description": "Linked task ID" },
+        "taskTitle": { "type": "string", "description": "Linked task title" },
+        "responsiblePerson": { "type": "string", "description": "Responsible officer" },
+        "status": { "type": "string", "description": "Status (PENDING, COMPLETED)" },
+        "note": { "type": "string", "description": "Additional notes" },
+        "isCompleted": { "type": "boolean", "description": "Completion state" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
+      },
+      "required": ["userId", "title", "amount", "budgetEstimateCode", "deadline"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}/tasks/{taskId}": {
+      "schema": "Task",
+      "description": "Tasks managed by the authenticated user"
+    },
+    "/users/{userId}/events/{eventId}": {
+      "schema": "Event",
+      "description": "Calendar events and meetings of the authenticated user"
+    },
+    "/users/{userId}/circulars/{circularId}": {
+      "schema": "Circular",
+      "description": "Repository of circulars, guidelines, and regulations for the user"
+    },
+    "/users/{userId}/advisories/{advisoryId}": {
+      "schema": "Advisory",
+      "description": "Strategic advisory notes and submissions generated by or for the user"
+    },
+    "/users/{userId}/settlements/{settlementId}": {
+      "schema": "Settlement",
+      "description": "Financial settlements and clearance items for the user"
+    }
+  }
+}

@@ -32,6 +32,9 @@ interface CadreDao {
     @Query("SELECT * FROM people WHERE (:workspaceId = '' OR :workspaceId = 'ALL' OR workspaceId = :workspaceId OR workspaceId = '' OR workspaceId = 'ws_primary_doan' OR workspaceId IS NULL) ORDER BY isKeyLeader DESC, fullName ASC")
     fun getPeople(workspaceId: String): Flow<List<PersonEntity>>
 
+    @Query("SELECT * FROM people ORDER BY isKeyLeader DESC, fullName ASC")
+    suspend fun getAllPeopleSync(): List<PersonEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertPerson(person: PersonEntity)
 
@@ -105,6 +108,9 @@ interface CadreDao {
     // Notes
     @Query("SELECT * FROM notes WHERE (:workspaceId = '' OR :workspaceId = 'ALL' OR workspaceId = :workspaceId OR workspaceId = '' OR workspaceId = 'ws_primary_doan' OR workspaceId IS NULL) ORDER BY isPinned DESC, updatedAt DESC")
     fun getNotes(workspaceId: String): Flow<List<NoteEntity>>
+
+    @Query("SELECT * FROM notes ORDER BY isPinned DESC, updatedAt DESC")
+    suspend fun getAllNotesSync(): List<NoteEntity>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNote(note: NoteEntity)

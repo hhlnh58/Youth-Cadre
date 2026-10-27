@@ -78,9 +78,16 @@ class CadreRepository(context: Context) {
 
     // Settlements
     fun getSettlements(workspaceId: String): Flow<List<SettlementEntity>> = dao.getSettlements(workspaceId)
+    suspend fun getAllSettlementsSync(): List<SettlementEntity> = dao.getAllSettlementsSync()
     suspend fun insertSettlement(settlement: SettlementEntity) = dao.insertSettlement(settlement)
     suspend fun updateSettlement(settlement: SettlementEntity) = dao.updateSettlement(settlement)
     suspend fun deleteSettlement(settlement: SettlementEntity) = dao.deleteSettlement(settlement)
+
+    // Sync helpers
+    suspend fun getAllPeopleSync(): List<PersonEntity> = dao.getAllPeopleSync()
+    suspend fun getAllNotesSync(): List<NoteEntity> = dao.getAllNotesSync()
+    suspend fun getAllTasksSync(): List<TaskEntity> = dao.getAllTasksSync()
+    suspend fun getAllCalendarEventsSync(): List<CalendarEventEntity> = dao.getAllCalendarEventsSync()
 
     // Quick Links
     fun getQuickLinks(workspaceId: String): Flow<List<QuickLinkEntity>> = dao.getQuickLinks(workspaceId)

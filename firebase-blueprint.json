@@ -97,6 +97,45 @@
         "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
       },
       "required": ["userId", "title", "amount", "budgetEstimateCode", "deadline"]
+    },
+    "Person": {
+      "title": "Person",
+      "description": "Represents a contact or cadre in the directory",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the owner" },
+        "workspaceId": { "type": "string", "description": "Workspace ID" },
+        "fullName": { "type": "string", "description": "Full name" },
+        "position": { "type": "string", "description": "Position or role" },
+        "unit": { "type": "string", "description": "Unit or department" },
+        "email": { "type": "string", "description": "Email address" },
+        "phone": { "type": "string", "description": "Phone number" },
+        "contactChannel": { "type": "string", "description": "Preferred contact channel" },
+        "assignedPortfolios": { "type": "string", "description": "Portfolios assigned" },
+        "notes": { "type": "string", "description": "Notes" },
+        "isKeyLeader": { "type": "boolean", "description": "Whether person is key leader" },
+        "avatarColorHex": { "type": "string", "description": "Avatar hex color" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
+      },
+      "required": ["userId", "fullName"]
+    },
+    "Note": {
+      "title": "Note",
+      "description": "Represents quick or meeting notes",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string", "description": "The UID of the owner" },
+        "workspaceId": { "type": "string", "description": "Workspace ID" },
+        "title": { "type": "string", "description": "Note title" },
+        "content": { "type": "string", "description": "Note content" },
+        "category": { "type": "string", "description": "Category" },
+        "isPinned": { "type": "boolean", "description": "Whether note is pinned" },
+        "tags": { "type": "string", "description": "Tags" },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Creation timestamp via serverTimestamp" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Update timestamp via serverTimestamp" }
+      },
+      "required": ["userId", "title"]
     }
   },
   "firestore": {
@@ -119,6 +158,14 @@
     "/users/{userId}/settlements/{settlementId}": {
       "schema": "Settlement",
       "description": "Financial settlements and clearance items for the user"
+    },
+    "/users/{userId}/people/{personId}": {
+      "schema": "Person",
+      "description": "Directory of cadres and contacts for the user"
+    },
+    "/users/{userId}/notes/{noteId}": {
+      "schema": "Note",
+      "description": "Notes and memos created by the user"
     }
   }
 }

@@ -103,3 +103,36 @@ data class FirestoreSettlement(
     @ServerTimestamp val updatedAt: Timestamp? = null
 )
 
+@IgnoreExtraProperties
+data class FirestorePerson(
+    @DocumentId val id: String = "",
+    val userId: String = "",
+    val workspaceId: String = "",
+    val fullName: String = "",
+    val position: String = "",
+    val unit: String = "",
+    val email: String = "",
+    val phone: String = "",
+    val contactChannel: String = "Zalo / Điện thoại",
+    val assignedPortfolios: String = "",
+    val notes: String = "",
+    val isKeyLeader: Boolean = false,
+    val avatarColorHex: String = "#497BFF",
+    @ServerTimestamp val createdAt: Timestamp? = null,
+    @ServerTimestamp val updatedAt: Timestamp? = null
+)
+
+@IgnoreExtraProperties
+data class FirestoreNote(
+    @DocumentId val id: String = "",
+    val userId: String = "",
+    val workspaceId: String = "",
+    val title: String = "",
+    val content: String = "",
+    val category: String = "QUICK",
+    val isPinned: Boolean = false,
+    val tags: String = "",
+    @ServerTimestamp val createdAt: Timestamp? = null,
+    @ServerTimestamp val updatedAt: Timestamp? = null
+)
+

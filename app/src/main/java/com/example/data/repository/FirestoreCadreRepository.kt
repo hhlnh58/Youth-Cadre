@@ -384,6 +384,125 @@ class FirestoreCadreRepository(
         }
     }
 
+    // PEOPLE STREAM
+    fun observePeople(): Flow<List<FirestorePerson>> = flow {
+        val uid = requireUserId()
+        val path = "users/$uid/people"
+        emitAll(
+            db.collection("users").document(uid).collection("people")
+                .snapshots()
+                .map { snapshot -> snapshot.toObjects(FirestorePerson::class.java) }
+                .catch { error ->
+                    if (error is Exception) handleFirestoreError(error, OperationType.LIST, path)
+                    throw error
+                }
+        )
+    }
+
+    suspend fun savePerson(person: FirestorePerson) {
+        val uid = requireUserId()
+        val ref = db.collection("users").document(uid).collection("people")
+        val docRef = if (person.id.isNotBlank()) ref.document(person.id) else ref.document()
+
+        val payload = hashMapOf<String, Any>(
+            "userId" to uid,
+            "workspaceId" to person.workspaceId,
+            "fullName" to person.fullName,
+            "position" to person.position,
+            "unit" to person.unit,
+            "email" to person.email,
+            "phone" to person.phone,
+            "contactChannel" to person.contactChannel,
+            "assignedPortfolios" to person.assignedPortfolios,
+            "notes" to person.notes,
+            "isKeyLeader" to person.isKeyLeader,
+            "avatarColorHex" to person.avatarColorHex,
+            "updatedAt" to FieldValue.serverTimestamp()
+        )
+        if (person.id.isBlank()) {
+            payload["createdAt"] = FieldValue.serverTimestamp()
+        }
+
+        try {
+            docRef.set(payload, com.google.firebase.firestore.SetOptions.merge()).await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, if (person.id.isBlank()) OperationType.CREATE else OperationType.UPDATE, docRef.path)
+            throw e
+        }
+    }
+
+    suspend fun deletePerson(personId: String) {
+        val uid = requireUserId()
+        val docRef = db.collection("users").document(uid).collection("people").document(personId)
+        try {
+            docRef.delete().await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.DELETE, docRef.path)
+            throw e
+        }
+    }
+
+    // NOTES STREAM
+    fun observeNotes(): Flow<List<FirestoreNote>> = flow {
+        val uid = requireUserId()
+        val path = "users/$uid/notes"
+        emitAll(
+            db.collection("users").document(uid).collection("notes")
+                .snapshots()
+                .map { snapshot -> snapshot.toObjects(FirestoreNote::class.java) }
+                .catch { error ->
+                    if (error is Exception) handleFirestoreError(error, OperationType.LIST, path)
+                    throw error
+                }
+        )
+    }
+
+    suspend fun saveNote(note: FirestoreNote) {
+        val uid = requireUserId()
+        val ref = db.collection("users").document(uid).collection("notes")
+        val docRef = if (note.id.isNotBlank()) ref.document(note.id) else ref.document()
+
+        val payload = hashMapOf<String, Any>(
+            "userId" to uid,
+            "workspaceId" to note.workspaceId,
+            "title" to note.title,
+            "content" to note.content,
+            "category" to note.category,
+            "isPinned" to note.isPinned,
+            "tags" to note.tags,
+            "updatedAt" to FieldValue.serverTimestamp()
+        )
+        if (note.id.isBlank()) {
+            payload["createdAt"] = FieldValue.serverTimestamp()
+        }
+
+        try {
+            docRef.set(payload, com.google.firebase.firestore.SetOptions.merge()).await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, if (note.id.isBlank()) OperationType.CREATE else OperationType.UPDATE, docRef.path)
+            throw e
+        }
+    }
+
+    suspend fun deleteNote(noteId: String) {
+        val uid = requireUserId()
+        val docRef = db.collection("users").document(uid).collection("notes").document(noteId)
+        try {
+            docRef.delete().await()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            handleFirestoreError(e, OperationType.DELETE, docRef.path)
+            throw e
+        }
+    }
+
     // Wipe mock data: no sample tasks or sample events seeded
     suspend fun seedInitialDataIfEmpty(uid: String) {
         // Pristine empty state for real user data

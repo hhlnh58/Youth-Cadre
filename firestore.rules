@@ -67,6 +67,29 @@ service cloud.firestore {
         && (!('isCompleted' in data) || data.isCompleted is bool);
     }
 
+    function isValidPerson(data, userId) {
+      return data.userId == userId
+        && data.fullName is string && data.fullName.size() > 0 && data.fullName.size() <= 300
+        && (!('position' in data) || data.position is string)
+        && (!('unit' in data) || data.unit is string)
+        && (!('email' in data) || data.email is string)
+        && (!('phone' in data) || data.phone is string)
+        && (!('contactChannel' in data) || data.contactChannel is string)
+        && (!('assignedPortfolios' in data) || data.assignedPortfolios is string)
+        && (!('notes' in data) || data.notes is string)
+        && (!('isKeyLeader' in data) || data.isKeyLeader is bool)
+        && (!('avatarColorHex' in data) || data.avatarColorHex is string);
+    }
+
+    function isValidNote(data, userId) {
+      return data.userId == userId
+        && data.title is string && data.title.size() > 0 && data.title.size() <= 300
+        && (!('content' in data) || data.content is string)
+        && (!('category' in data) || data.category is string)
+        && (!('isPinned' in data) || data.isPinned is bool)
+        && (!('tags' in data) || data.tags is string);
+    }
+
     match /users/{userId} {
       allow read, write: if isOwner(userId);
 
@@ -101,6 +124,18 @@ service cloud.firestore {
       match /settlements/{settlementId} {
         allow read: if isOwner(userId);
         allow create, update: if isOwner(userId) && isValidSettlement(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /people/{personId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidPerson(request.resource.data, userId);
+        allow delete: if isOwner(userId);
+      }
+
+      match /notes/{noteId} {
+        allow read: if isOwner(userId);
+        allow create, update: if isOwner(userId) && isValidNote(request.resource.data, userId);
         allow delete: if isOwner(userId);
       }
     }

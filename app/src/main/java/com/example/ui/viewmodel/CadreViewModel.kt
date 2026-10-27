@@ -351,6 +351,187 @@ class CadreViewModel(application: Application) : AndroidViewModel(application) {
                     firestoreAdvisories.value = fAdvisories
                 }
             }
+
+            // Sync Settlements (Quyết toán kinh phí)
+            launch {
+                firestoreRepository.observeSettlements().catch { e ->
+                    Log.e(TAG, "Lỗi observeSettlements", e)
+                }.collect { fSettlements ->
+                    val currentWs = _currentWorkspaceId.value.ifBlank {
+                        workspaces.value.firstOrNull()?.id ?: "ws_primary_doan"
+                    }
+                    fSettlements.forEach { fs ->
+                        val settlement = SettlementEntity(
+                            id = fs.id.ifBlank { UUID.randomUUID().toString() },
+                            workspaceId = if (fs.workspaceId.isNotBlank()) fs.workspaceId else currentWs,
+                            title = fs.title,
+                            amount = fs.amount,
+                            budgetEstimateCode = fs.budgetEstimateCode,
+                            deadline = fs.deadline,
+                            taskId = fs.taskId,
+                            taskTitle = fs.taskTitle,
+                            responsiblePerson = fs.responsiblePerson,
+                            status = fs.status,
+                            note = fs.note,
+                            isCompleted = fs.isCompleted
+                        )
+                        repository.insertSettlement(settlement)
+                    }
+                }
+            }
+
+            // Sync People (Danh bạ cán bộ)
+            launch {
+                firestoreRepository.observePeople().catch { e ->
+                    Log.e(TAG, "Lỗi observePeople", e)
+                }.collect { fPeople ->
+                    val currentWs = _currentWorkspaceId.value.ifBlank {
+                        workspaces.value.firstOrNull()?.id ?: "ws_primary_doan"
+                    }
+                    fPeople.forEach { fp ->
+                        val person = PersonEntity(
+                            id = fp.id.ifBlank { UUID.randomUUID().toString() },
+                            workspaceId = if (fp.workspaceId.isNotBlank()) fp.workspaceId else currentWs,
+                            fullName = fp.fullName,
+                            position = fp.position,
+                            unit = fp.unit,
+                            email = fp.email,
+                            phone = fp.phone,
+                            contactChannel = fp.contactChannel,
+                            assignedPortfolios = fp.assignedPortfolios,
+                            notes = fp.notes,
+                            isKeyLeader = fp.isKeyLeader,
+                            avatarColorHex = fp.avatarColorHex
+                        )
+                        repository.insertPerson(person)
+                    }
+                }
+            }
+
+            // Sync Notes (Ghi chú công tác)
+            launch {
+                firestoreRepository.observeNotes().catch { e ->
+                    Log.e(TAG, "Lỗi observeNotes", e)
+                }.collect { fNotes ->
+                    val currentWs = _currentWorkspaceId.value.ifBlank {
+                        workspaces.value.firstOrNull()?.id ?: "ws_primary_doan"
+                    }
+                    fNotes.forEach { fn ->
+                        val note = NoteEntity(
+                            id = fn.id.ifBlank { UUID.randomUUID().toString() },
+                            workspaceId = if (fn.workspaceId.isNotBlank()) fn.workspaceId else currentWs,
+                            title = fn.title,
+                            content = fn.content,
+                            category = fn.category,
+                            isPinned = fn.isPinned,
+                            tags = fn.tags
+                        )
+                        repository.insertNote(note)
+                    }
+                }
+            }
+
+            // Reverse sync: Ensure any contacts, settlements, notes created on device are pushed to Firestore
+            launch {
+                try {
+                    val localPeople = repository.getAllPeopleSync()
+                    localPeople.forEach { p ->
+                        firestoreRepository.savePerson(
+                            FirestorePerson(
+                                id = p.id,
+                                userId = uid,
+                                workspaceId = p.workspaceId,
+                                fullName = p.fullName,
+                                position = p.position,
+                                unit = p.unit,
+                                email = p.email,
+                                phone = p.phone,
+                                contactChannel = p.contactChannel,
+                                assignedPortfolios = p.assignedPortfolios,
+                                notes = p.notes,
+                                isKeyLeader = p.isKeyLeader,
+                                avatarColorHex = p.avatarColorHex
+                            )
+                        )
+                    }
+
+                    val localSettlements = repository.getAllSettlementsSync()
+                    localSettlements.forEach { s ->
+                        firestoreRepository.saveSettlement(
+                            FirestoreSettlement(
+                                id = s.id,
+                                userId = uid,
+                                workspaceId = s.workspaceId,
+                                title = s.title,
+                                amount = s.amount,
+                                budgetEstimateCode = s.budgetEstimateCode,
+                                deadline = s.deadline,
+                                taskId = s.taskId,
+                                taskTitle = s.taskTitle,
+                                responsiblePerson = s.responsiblePerson,
+                                status = s.status,
+                                note = s.note,
+                                isCompleted = s.isCompleted
+                            )
+                        )
+                    }
+
+                    val localNotes = repository.getAllNotesSync()
+                    localNotes.forEach { n ->
+                        firestoreRepository.saveNote(
+                            FirestoreNote(
+                                id = n.id,
+                                userId = uid,
+                                workspaceId = n.workspaceId,
+                                title = n.title,
+                                content = n.content,
+                                category = n.category,
+                                isPinned = n.isPinned,
+                                tags = n.tags
+                            )
+                        )
+                    }
+
+                    val localTasks = repository.getAllTasksSync()
+                    localTasks.forEach { t ->
+                        firestoreRepository.saveTask(
+                            FirestoreTask(
+                                id = t.id,
+                                userId = uid,
+                                title = t.title,
+                                description = t.description,
+                                assignedBy = t.assignerName,
+                                assignee = t.responsiblePersonName,
+                                coordinator = t.collaborators,
+                                deadline = t.dueDate,
+                                location = t.location,
+                                priority = t.priority,
+                                status = t.status,
+                                progress = t.progressPercent.toLong()
+                            )
+                        )
+                    }
+
+                    val localEvents = repository.getAllCalendarEventsSync()
+                    localEvents.forEach { ev ->
+                        firestoreRepository.saveEvent(
+                            FirestoreEvent(
+                                id = ev.id,
+                                userId = uid,
+                                title = ev.title,
+                                description = ev.purpose,
+                                date = ev.date,
+                                time = ev.startTime,
+                                location = ev.location,
+                                host = ev.destinationUnit.ifBlank { ev.contactPerson },
+                                attendees = ev.participants
+                            )
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Lỗi reverse sync local data lên Firestore", e)
+                }
+            }
         }
     }
 
@@ -942,14 +1123,12 @@ class CadreViewModel(application: Application) : AndroidViewModel(application) {
                     )
                 }
                 "NOTE" -> {
-                    val wsId = _currentWorkspaceId.value.ifBlank { "ws_primary_doan" }
-                    val note = NoteEntity(
-                        workspaceId = wsId,
+                    saveNote(
+                        id = null,
                         title = entity.title.take(60),
                         content = entity.content,
                         category = "QUICK"
                     )
-                    repository.insertNote(note)
                 }
                 else -> { // TASK
                     saveTask(
@@ -1012,6 +1191,29 @@ class CadreViewModel(application: Application) : AndroidViewModel(application) {
                 isKeyLeader = isKeyLeader
             )
             repository.insertPerson(person)
+
+            if (currentUser.value != null) {
+                try {
+                    val fPerson = FirestorePerson(
+                        id = person.id,
+                        userId = firestoreRepository.getCurrentUserId() ?: "",
+                        workspaceId = person.workspaceId,
+                        fullName = person.fullName,
+                        position = person.position,
+                        unit = person.unit,
+                        email = person.email,
+                        phone = person.phone,
+                        contactChannel = person.contactChannel,
+                        assignedPortfolios = person.assignedPortfolios,
+                        notes = person.notes,
+                        isKeyLeader = person.isKeyLeader,
+                        avatarColorHex = person.avatarColorHex
+                    )
+                    firestoreRepository.savePerson(fPerson)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Lỗi lưu person lên Firestore", e)
+                }
+            }
         }
     }
 
@@ -1037,6 +1239,13 @@ class CadreViewModel(application: Application) : AndroidViewModel(application) {
     fun deletePerson(person: PersonEntity) {
         viewModelScope.launch {
             repository.deletePerson(person)
+            if (currentUser.value != null) {
+                try {
+                    firestoreRepository.deletePerson(person.id)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Lỗi xóa person trên Firestore", e)
+                }
+            }
         }
     }
 
@@ -1118,21 +1327,48 @@ class CadreViewModel(application: Application) : AndroidViewModel(application) {
     // Note actions
     fun saveNote(id: String? = null, title: String, content: String, category: String = "QUICK", isPinned: Boolean = false) {
         viewModelScope.launch {
+            val wsId = _currentWorkspaceId.value.ifBlank { "ws_primary_doan" }
             val note = NoteEntity(
                 id = id ?: UUID.randomUUID().toString(),
-                workspaceId = _currentWorkspaceId.value,
+                workspaceId = wsId,
                 title = title,
                 content = content,
                 category = category,
-                isPinned = isPinned
+                isPinned = isPinned,
+                updatedAt = System.currentTimeMillis()
             )
             repository.insertNote(note)
+
+            if (currentUser.value != null) {
+                try {
+                    val fNote = FirestoreNote(
+                        id = note.id,
+                        userId = firestoreRepository.getCurrentUserId() ?: "",
+                        workspaceId = note.workspaceId,
+                        title = note.title,
+                        content = note.content,
+                        category = note.category,
+                        isPinned = note.isPinned,
+                        tags = note.tags
+                    )
+                    firestoreRepository.saveNote(fNote)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Lỗi lưu note lên Firestore", e)
+                }
+            }
         }
     }
 
     fun deleteNote(note: NoteEntity) {
         viewModelScope.launch {
             repository.deleteNote(note)
+            if (currentUser.value != null) {
+                try {
+                    firestoreRepository.deleteNote(note.id)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Lỗi xóa note trên Firestore", e)
+                }
+            }
         }
     }
 
